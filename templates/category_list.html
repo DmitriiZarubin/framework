@@ -1,0 +1,26 @@
+{% extends "base_template.html" %}
+{% block title %}
+Список курсов
+{% endblock %}
+{% block style %}
+{% include "style_part.html" %}
+{% endblock %}
+{% block menu %}
+{% include "menu_part.html" %}
+{% endblock %}
+{% block body %}
+<a href="/">назад</a>
+
+<h1>Список категорий</h1>
+<ul>
+
+    {% for item in objects_list %}
+    <li>
+        {{item.name}} <span>Количество курсов: {{item.course_count()}}</span>
+        <a href="/create-course?id={{item.id}}">Добавить курс </a> <a
+            href="/courses-list?id={{item.id}}">Список курсов</a>
+    </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

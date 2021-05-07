@@ -1,6 +1,7 @@
 import quopri
 from framework.requests import GetRequests, PostRequests
 
+
 class PageNotFound404:
     """
     класс для ошибки 404
@@ -42,8 +43,6 @@ class Framework:
             view = self.routes[path]
         else:
             view = PageNotFound404()
-
-        request = {}
 
         for front in self.fronts:
             front(request)
