@@ -23,9 +23,7 @@ class Debug:
         self.name = name
 
     def __call__(self, cls):
-
         def timeit(method):
-
             def timed(*args, **kw):
                 time_start = time()
                 result = method(*args, **kw)
