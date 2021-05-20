@@ -1,16 +1,19 @@
 from datetime import date
 
 from framework.templator import render
-from pattern.сreational_pattern import Engine, Logger
+from pattern.сreational_pattern import Engine, Logger, MapperRegistry
 from pattern.struct_pattern import ApplicationRoute, Debug
 from pattern.behavior_pattern import EmailNotifier, SmsNotifier, \
-    TemplateView, ListView, CreateView, BaseSerializer
+    ListView, CreateView, BaseSerializer
+from pattern.unit_of_work_pattern import UnitOfWork
 
 site = Engine()
 logger = Logger('main_log.txt')
 routes = {}
 email_notifier = EmailNotifier()
 sms_notifier = SmsNotifier()
+UnitOfWork.new_current()
+UnitOfWork.get_current().set_mapper_registry(MapperRegistry)
 
 
 @ApplicationRoute(routes=routes, url='/')
@@ -21,7 +24,6 @@ class Index:
 
     @Debug(name='Index')
     def __call__(self, request):
-        # return '200 OK', render('index.html', data=request.get('data', None))
         return '200 OK', render('index.html', objects_list=site.categories)
 
 
@@ -198,6 +200,10 @@ class StudentListView(ListView):
     queryset = site.students
     template_name = 'stud_list.html'
 
+    def get_queryset(self):
+        mapper = MapperRegistry.get_current_mapper('student')
+        return mapper.all()
+
 
 @ApplicationRoute(routes=routes, url='/create-student/')
 class StudentCreateView(CreateView):
@@ -208,6 +214,8 @@ class StudentCreateView(CreateView):
         name = site.decode_value(name)
         new_obj = site.create_user('student', name)
         site.students.append(new_obj)
+        new_obj.mark_new()
+        UnitOfWork.get_current().commit()
 
 
 @ApplicationRoute(routes=routes, url='/add-student/')
@@ -217,6 +225,8 @@ class AddStudentByCourseCreateView(CreateView):
     def get_context_data(self):
         context = super().get_context_data()
         context['courses'] = site.courses
+        mapper = MapperRegistry.get_current_mapper('student')
+        site.students = mapper.all()
         context['students'] = site.students
         return context
 
